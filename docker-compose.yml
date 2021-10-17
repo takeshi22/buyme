@@ -1,0 +1,27 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./server/tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: buyme
+  server:
+    build: ./server
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 2222 -b '0.0.0.0'"
+    volumes:
+      - ./server:/buyme/server
+      - gem_data:/usr/local/bundle
+    ports:
+      - "2222:2222"
+    depends_on:
+      - db
+  # web:
+  #   build: ./web
+  #   tty: true
+  #   volumes:
+  #     - ./web:/buyme/web
+  #   ports:
+  #     - "5352:5352"
+volumes:
+  gem_data:
