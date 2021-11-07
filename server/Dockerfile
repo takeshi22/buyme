@@ -1,15 +1,8 @@
-FROM ruby:3.0.2
-RUN apt-get update -qq && apt-get install -y nodejs postgresql-client
-RUN mkdir -p /buyme/server
-WORKDIR /buyme/server
-COPY Gemfile /buyme/server/Gemfile
-COPY Gemfile.lock /buyme/server/Gemfile.lock
-RUN bundle install
-COPY . /buyme/server
+FROM golang:1.15.6
+RUN mkdir -p /go/src/timememo
 
-COPY entrypoint.sh /usr/bin/
-RUN chmod +x /usr/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
-EXPOSE 2222
+WORKDIR /go/src/timememo/server
+ADD . /go/src/timememo
+ENV GO156MODULE=on
 
-CMD ["rails", "server", "-b", "0.0.0.0"]
+# CMD ["go", "run", "main.go"]
