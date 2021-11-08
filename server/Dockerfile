@@ -1,8 +1,8 @@
 FROM golang:1.15.6
-RUN mkdir -p /go/src/timememo
+RUN mkdir -p /go/src/buyme
 
-WORKDIR /go/src/timememo/server
-ADD . /go/src/timememo
+WORKDIR /go/src/buyme/server
+ADD . /go/src/buyme
 ENV GO156MODULE=on
 
-# CMD ["go", "run", "main.go"]
+CMD ["go", "run", "server.go"]

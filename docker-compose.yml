@@ -1,9 +1,14 @@
 services:
   db:
     image: postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - buyme-network
     volumes:
-      - ./server/tmp/db:/var/lib/postgresql/data
+      - ./tmp/db:/var/lib/postgresql/data
     environment:
+      POSTGRES_USER: buyme
       POSTGRES_PASSWORD: buyme
   server:
     build: ./server

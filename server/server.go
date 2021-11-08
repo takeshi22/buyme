@@ -3,27 +3,27 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/buyme/graph"
-	"github.com/buyme/graph/generated"
+	"github.com/buyme/models"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
-const defaultPort = "8080"
-
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
+	r := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:9000"}
+	r.Use(cors.New(config))
+
+	err := models.InitDatabase()
+	if err != nil {
+		log.Fatalln("could not connect database")
 	}
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	r.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Hello world!")
+	})
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	r.Run(":2222")
 }
