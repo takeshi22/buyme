@@ -38,6 +38,10 @@ func InitDatabase() (err error) {
 		log.Fatalln("Failed to connect to database")
 	}
 
+	exist := database.Migrator().HasTable(&User{})
+	if !exist {
+		database.Migrator().CreateTable(&User{})
+	}
 	Db = database
 
 	return

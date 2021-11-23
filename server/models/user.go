@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -23,6 +25,10 @@ func (user *User) CreateUser() error {
 }
 
 func (user *User) HashPassword(password string) error {
+	if password == "" {
+		return errors.New("not find password")
+	}
+
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		return err
