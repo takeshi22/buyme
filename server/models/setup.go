@@ -17,7 +17,7 @@ func InitDatabase() (err error) {
 
 	var loadError error
 	if ok {
-		loadError = godotenv.Load("../.env")
+		loadError = godotenv.Load("../.test.env")
 	} else {
 		loadError = godotenv.Load(".env")
 	}
@@ -38,10 +38,6 @@ func InitDatabase() (err error) {
 		log.Fatalln("Failed to connect to database")
 	}
 
-	exist := database.Migrator().HasTable(&User{})
-	if !exist {
-		database.Migrator().CreateTable(&User{})
-	}
 	Db = database
 
 	return
