@@ -21,10 +21,24 @@ func TestHashPassword(t *testing.T) {
 }
 
 func TestCreateUser(t *testing.T) {
-	// var userResult User
+	var userResult User
 
 	err := InitDatabase()
 	if err != nil {
 		t.Error(err)
 	}
+
+	user := User{
+		Name:     "test user",
+		Email:    "test@email.com",
+		Password: "test",
+		Nickname: "tu",
+	}
+	err = user.CreateUser()
+	assert.NoError(t, err)
+
+	Db.Where("email = ?", user.Email).Find(&userResult)
+	Db.Unscoped().Where("email = ?", user.Email).Delete(&user)
+
+	assert.Equal(t, "test@email.com", userResult.Email)
 }

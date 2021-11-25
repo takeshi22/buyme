@@ -1,4 +1,4 @@
-package auth
+package controllers
 
 import (
 	"log"
@@ -37,4 +37,8 @@ func SignUp(c *gin.Context) {
 	}
 
 	c.JSON(200, user)
+}
+
+func Login(c *gin.Context) {
+
 }
