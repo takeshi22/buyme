@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/buyme/api/auth"
 	"github.com/buyme/models"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,12 @@ func main() {
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello world!")
 	})
+
+	api := r.Group("/api")
+	{
+		api.POST("/signUp", auth.SignUp)
+		api.POST("/login", auth.Login)
+	}
 
 	r.Run(":2222")
 }
