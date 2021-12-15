@@ -4,32 +4,71 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/buyme/models"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/twinj/uuid"
 	"gorm.io/gorm"
 )
 
-type LoginPayload struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
+func GenerateToken(userid uint) (*TokenDetails, error) {
+	tokenDetail := &TokenDetails{}
 
-func GenerateToken(userid uint) (string, error) {
+	tokenDetail.AtExpires = time.Now().Add(time.Minute * 15).Unix()
+	tokenDetail.AccessUuid = uuid.NewV4().String()
+
+	tokenDetail.RtExpires = time.Now().Add(time.Hour * 24 * 7).Unix()
+	tokenDetail.RefreshUuid = uuid.NewV4().String()
+
 	var err error
+
+	// generate access token
 	secret := os.Getenv("AUTH_SECRET")
 	atClaims := jwt.MapClaims{}
 	atClaims["authorized"] = true
+	atClaims["access_uuid"] = tokenDetail.AccessUuid
 	atClaims["user_id"] = userid
-	atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+	atClaims["exp"] = tokenDetail.AtExpires
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-	token, err := at.SignedString([]byte(secret))
+	tokenDetail.AccessToken, err = at.SignedString([]byte(secret))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return token, nil
+
+	// generate refresh token
+	refreshSecret := os.Getenv("REFRESH_SECRET")
+	rtClaims := jwt.MapClaims{}
+	rtClaims["refresh_uuid"] = tokenDetail.RefreshUuid
+	rtClaims["user_id"] = userid
+	rtClaims["exp"] = tokenDetail.RtExpires
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	tokenDetail.RefreshToken, err = rt.SignedString([]byte(refreshSecret))
+	if err != nil {
+		return nil, err
+	}
+
+	return tokenDetail, nil
+}
+
+func CreateAuth(userid uint, td *TokenDetails) error {
+	at := time.Unix(td.AtExpires, 0)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
+
+	errAccess := models.Client.Set(td.AccessUuid, strconv.Itoa(int(userid)), at.Sub(now)).Err()
+	if errAccess != nil {
+		return errAccess
+	}
+
+	errRefresh := models.Client.Set(td.RefreshUuid, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
+	if errRefresh != nil {
+		return errRefresh
+	}
+
+	return nil
 }
 
 func SignUp(c *gin.Context) {
@@ -100,5 +139,14 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, token)
+
+	saveErr := CreateAuth(user.ID, token)
+	if saveErr != nil {
+		c.JSON(http.StatusUnprocessableEntity, saveErr.Error())
+	}
+	tokens := map[string]string{
+		"access_token":  token.AccessToken,
+		"refresh_token": token.RefreshToken,
+	}
+	c.JSON(http.StatusOK, tokens)
 }
