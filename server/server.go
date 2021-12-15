@@ -22,6 +22,11 @@ func main() {
 		log.Fatalln("could not connect database")
 	}
 
+	err = models.InitRedis()
+	if err != nil {
+		log.Fatalln("could not connect redis")
+	}
+
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Hello world!")
 	})

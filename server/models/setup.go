@@ -5,12 +5,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 var Db *gorm.DB
+var Client *redis.Client
 
 func InitDatabase() (err error) {
 	_, ok := os.LookupEnv("ENVIROMENT")
@@ -41,4 +43,17 @@ func InitDatabase() (err error) {
 	Db = database
 
 	return
+}
+
+func InitRedis() (err error) {
+	dsn := "redis:6379"
+	Client = redis.NewClient((&redis.Options{
+		Addr: dsn,
+	}))
+	_, err = Client.Ping().Result()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return nil
 }

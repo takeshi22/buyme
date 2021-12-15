@@ -5,4 +5,4 @@ WORKDIR /go/src/buyme/server
 ADD . /go/src/buyme
 ENV GO156MODULE=on
 
-CMD ["./wait-for-it.sh", "db:5432", "--", "go", "run", "server.go"]
+# CMD ["./wait-for-it.sh", "db:5432", "--", "go", "run", "server.go"]

@@ -10,6 +10,14 @@ services:
     environment:
       POSTGRES_USER: buyme
       POSTGRES_PASSWORD: buyme
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    networks:
+      - buyme-network
+    volumes:
+      - "./data/redis:/data"
   server:
     build: ./server
     tty: true
@@ -21,6 +29,8 @@ services:
       - db
     networks:
       - buyme-network
+    command:
+      /bin/bash -c "sleep 10 && go run server.go"
   # web:
   #   build: ./web
   #   tty: true
