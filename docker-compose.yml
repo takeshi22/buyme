@@ -31,13 +31,15 @@ services:
       - buyme-network
     command:
       /bin/bash -c "sleep 10 && go run server.go"
-  # web:
-  #   build: ./web
-  #   tty: true
-  #   volumes:
-  #     - ./web:/buyme/web
-  #   ports:
-  #     - "5352:5352"
+  front:
+    build: ./front
+    tty: true
+    networks:
+      - buyme-network
+    volumes:
+      - ./front:/buyme/front
+    ports:
+      - "3000:3000"
 networks:
   buyme-network:
     external: true
